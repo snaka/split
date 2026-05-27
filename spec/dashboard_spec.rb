@@ -111,6 +111,24 @@ describe Split::Dashboard do
         expect(user[experiment.key]).to eq("red")
         expect(blue_link.participant_count).to eq(7)
       end
+
+      context "override cookie domain" do
+        after { Split.configuration.persistence_cookie_domain = nil }
+
+        it "should not set a domain when persistence_cookie_domain is not configured" do
+          post "/force_alternative?experiment=#{experiment.name}", alternative: "blue"
+
+          expect(last_response.headers["Set-Cookie"]).to include("split_override=")
+          expect(last_response.headers["Set-Cookie"]).not_to include("domain=")
+        end
+
+        it "should set the domain from persistence_cookie_domain when configured" do
+          Split.configuration.persistence_cookie_domain = ".example.com"
+          post "/force_alternative?experiment=#{experiment.name}", alternative: "blue"
+
+          expect(last_response.headers["Set-Cookie"]).to include("domain=.example.com")
+        end
+      end
     end
 
     context "incremented version" do
