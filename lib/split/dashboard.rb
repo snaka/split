@@ -46,7 +46,7 @@ module Split
 
       cookies = JSON.parse(request.cookies["split_override"]) rescue {}
       cookies[experiment.name] = alternative.name
-      response.set_cookie("split_override", { value: cookies.to_json, path: "/" })
+      response.set_cookie("split_override", { value: cookies.to_json, path: "/", domain: Split.configuration.persistence_cookie_domain }.compact)
 
       redirect url("/")
     end

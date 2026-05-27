@@ -278,6 +278,15 @@ end
 
 The data stored consists of the experiment name and the variants the user is in. Example: { "experiment_name" => "variant_a" }
 
+By default the cookie is scoped to the exact host that set it. To share assignments across subdomains, set `persistence_cookie_domain` to a dot-prefixed domain. This applies both to the `split` persistence cookie and to the `split_override` cookie used when forcing an alternative from the dashboard.
+
+```ruby
+Split.configure do |config|
+  config.persistence = :cookie
+  config.persistence_cookie_domain = ".example.com" # shared across foo.example.com, bar.example.com, ...
+end
+```
+
 __Note:__ Using cookies depends on `ActionDispatch::Cookies` or any identical API
 
 #### Redis
