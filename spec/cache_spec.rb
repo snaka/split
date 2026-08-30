@@ -115,6 +115,28 @@ describe Split::Cache do
     end
   end
 
+  describe "thread safety" do
+    before do
+      Split.configuration.cache = true
+      # Disable global invalidation check for this test
+      allow(Split::CacheInvalidator).to receive(:check_and_clear_if_needed)
+    end
+
+    it "tolerates the cache being cleared while fetch is computing a value" do
+      # Simulates `clear` (from another thread, or triggered by global
+      # invalidation) landing between fetch taking its snapshot and writing
+      # the computed value back.
+      result = nil
+      expect {
+        result = Split::Cache.fetch(namespace, key) do
+          Split::Cache.clear
+          :computed
+        end
+      }.not_to raise_error
+      expect(result).to eq(:computed)
+    end
+  end
+
   describe "global timestamp invalidation" do
     before do
       Split.configuration.cache = true

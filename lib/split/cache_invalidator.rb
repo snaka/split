@@ -43,7 +43,9 @@ module Split
 
       private
         def within_check_interval?(now)
-          @last_global_ts_check && (now.to_f - @last_global_ts_check.to_f) < check_interval
+          # Snapshot the ivar so a concurrent `reset` cannot nil it between reads
+          last_check = @last_global_ts_check
+          last_check && (now.to_f - last_check.to_f) < check_interval
         end
 
         def fetch_global_timestamp
@@ -51,7 +53,9 @@ module Split
         end
 
         def timestamp_updated?(current_global_ts)
-          @global_cache_ts && current_global_ts > @global_cache_ts
+          # Snapshot the ivar so a concurrent `reset` cannot nil it between reads
+          known_ts = @global_cache_ts
+          known_ts && current_global_ts > known_ts
         end
 
         def update_local_state(current_global_ts, now)
